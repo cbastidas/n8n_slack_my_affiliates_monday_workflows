@@ -1,0 +1,228 @@
+{
+  "name": "Keep Alive",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        -336
+      ],
+      "id": "54e05f7d-414d-41b1-9f4b-1c38f35a3f67",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3e1d6349-f3fd-4ced-8376-bbada2dc7e00",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ONLINE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        -336
+      ],
+      "id": "bb730e9d-84b4-49cb-887e-a614a3f64a19",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "https://myaffiliates-worker-production.up.railway.app/status",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        -336
+      ],
+      "id": "4147120c-5245-489f-a3ca-ed64949ef38b",
+      "name": "Getting the Status of the Cookies"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://myaffiliates-worker-production.up.railway.app/refresh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"instance\": \"Throne\" \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        -128
+      ],
+      "id": "624a3b31-2706-4850-bd9a-0c85637c5529",
+      "name": "Throne Reviver"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://myaffiliates-worker-production.up.railway.app/refresh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"instance\": \"Realm\" \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        -496
+      ],
+      "id": "c164f154-ee5e-442d-84ed-ef4d371d58db",
+      "name": "Realm Reviver"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "text": "=:white_check_mark: *All MyAffiliates sessions are active.*",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1024,
+        -432
+      ],
+      "id": "4ad58ff6-055a-4bbc-b57d-862a0c06b0ee",
+      "name": "Cookies OK",
+      "webhookId": "7d378422-c8d9-40dc-9e4a-f769e9438486",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "text": "=:x: *Cookies Deleted on My Affiliates, log back in*",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1024,
+        -240
+      ],
+      "id": "605543ff-d7f7-46b6-b718-3a4e067b9b40",
+      "name": "Cookies Deleted",
+      "webhookId": "7d378422-c8d9-40dc-9e4a-f769e9438486",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Getting the Status of the Cookies",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Realm Reviver",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Throne Reviver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Getting the Status of the Cookies": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throne Reviver": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Cookies Deleted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "f072750f-6dec-4b37-acc3-3d3fd6180dd8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ed8fbabe0a9266e3c88d66e147ac48c21634f41c14e8443e97aadf8c6ae93cde"
+  },
+  "id": "6vd7dfzZDoMSE8D6",
+  "tags": []
+}

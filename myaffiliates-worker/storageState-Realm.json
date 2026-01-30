@@ -1,0 +1,68 @@
+{
+  "cookies": [
+    {
+      "name": "_GRECAPTCHA",
+      "value": "09AKhCRwhua4owH-GdJPcD_hELcY3Jy3EpDWqNhjGOsex01-Uni6Neu5EQ9B2J_9pFVOVMw43ulhhr-DZJdl-zHV0",
+      "domain": "www.google.com",
+      "path": "/recaptcha",
+      "expires": 1785317374.944978,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MYAFFSESSID",
+      "value": "5grrvgre6ji7npb39l1vpglg21",
+      "domain": "admin2.neataffiliates.com",
+      "path": "/",
+      "expires": 1770974986.431177,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "ZBAN_last_login",
+      "value": "2026-01-30",
+      "domain": "admin2.neataffiliates.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "SSR",
+      "value": "1",
+      "domain": "admin2.neataffiliates.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://admin2.neataffiliates.com",
+      "localStorage": [
+        {
+          "name": "_grecaptcha",
+          "value": "09AKhCRwj8y1moD9y70Hr0LuV6Ybo9NtKYkyxjqp1w2CWIj7K8NPPuGcnaSEG81ttkmgixIdr4wvV-kNshBxdt6wuyf0VsUD7dhnm15u-3tXKljq83Nqo1nOJVPBQccW4t"
+        }
+      ]
+    },
+    {
+      "origin": "https://www.google.com",
+      "localStorage": [
+        {
+          "name": "rc::a",
+          "value": "ZzduZzh6dDlydGh4"
+        },
+        {
+          "name": "rc::f",
+          "value": "0aAEV7LAmxHQTuHoNUV--23JcBVjS96yd3wAPftW1Z7i8f1ESIIanaj414U0hmOMyHO53ODVg"
+        }
+      ]
+    }
+  ]
+}

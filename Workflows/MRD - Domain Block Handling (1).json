@@ -1,0 +1,2390 @@
+{
+  "name": "MRD - Domain Block Handling",
+  "nodes": [
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cb20a68f-cb13-48c4-97d8-d9bbc6457cd8",
+      "name": "Slack Trigger",
+      "webhookId": "00ed81fe-7751-4dc1-9a6f-d923d6eb0ef0",
+      "credentials": {
+        "slackApi": {
+          "id": "F6Y49pvXo9BWbUC4",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "32938f52-afa9-4d28-918a-8f48231cb143",
+              "leftValue": "={{ $json.subject?.match(/([a-z0-9-]+\\.)+[a-z]{2,}/i)?.[0] || \"\" }}\n",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        368,
+        0
+      ],
+      "id": "b5a88dd6-6afd-45eb-9f36-50fcb7990124",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3325e4e9-4ce2-4978-af16-e5a4101a9af8",
+              "leftValue": "={{$json.domain}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1584,
+        16
+      ],
+      "id": "f018d5f4-3a6c-4f48-80a7-0f994bd2d5e1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2db028e2-a98d-41f0-85eb-0b20a869ad2f",
+              "name": "debug_message",
+              "value": "={{ \"Domain detected: \" + ($json.domain || \"\").trim() }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1824,
+        0
+      ],
+      "id": "50df8472-52c8-4a80-aa48-40024435ccfd",
+      "name": "debug_message"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "fileId": "={{ $json.files[0].id }}"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        576,
+        0
+      ],
+      "id": "835d2360-43f7-4820-bb5f-ad6a1a0106e3",
+      "name": "Get a file",
+      "webhookId": "e904e0f5-be30-4aaa-af83-33b68bb3eb66",
+      "credentials": {
+        "slackApi": {
+          "id": "uvMoqRG7Pc8cHVdl",
+          "name": "Slack account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$node[\"Get a file\"].json.url_private_download || $node[\"Get a file\"].json.url_private}}\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1104,
+        16
+      ],
+      "id": "aa167bf0-3310-4a3c-9e12-939f027bdeb3",
+      "name": "HTTP Request",
+      "credentials": {
+        "slackApi": {
+          "id": "F6Y49pvXo9BWbUC4",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04eca8d7-d052-4c7f-bc39-5bdb623133ef",
+              "name": "domain",
+              "value": "={{\n  (\n    (\n      ((($json.data || \"\").match(/<body[\\s\\S]*<\\/body>/i)?.[0] || \"\")\n        .match(/\\b(?:[a-z0-9-]+\\.)+[a-z]{2,}\\b/ig) || []\n      ).find(d => !/w3\\.org|\\.dtd$/i.test(d)) || \"\"\n    )\n  ).replace(/\\s+/g, \"\").trim()\n}}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        16
+      ],
+      "id": "d4321370-33c5-46e5-9783-bdb54de79a14",
+      "name": "Extract Domain from HTML"
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $json.message_ts }}",
+        "name": "eyes"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2256,
+        16
+      ],
+      "id": "0a8e859b-43a2-4048-a6e1-0305ea992330",
+      "name": "Add a reaction",
+      "webhookId": "2f8b6820-d94f-4ace-a362-fb6e5e1599ae",
+      "credentials": {
+        "slackApi": {
+          "id": "uvMoqRG7Pc8cHVdl",
+          "name": "Slack account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e5258e4a-badd-482e-9379-5539ef16e507",
+              "name": "message_ts",
+              "value": "={{ ($json.ts || $json.event_ts).trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "cc82d491-4935-4092-9948-43862ea692a4",
+              "name": "message_channel",
+              "value": "={{ ($json.channel || $json.message_channel).trim() }}\n",
+              "type": "string"
+            },
+            {
+              "id": "5acd6981-8166-4e73-9471-22a4071d1875",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        0
+      ],
+      "id": "96dfcd50-4d4a-4186-8ac9-4d6e3a5b62a7",
+      "name": "Obtaining the Timestamp and Channel"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        848,
+        48
+      ],
+      "id": "0478b8f5-faf6-4a56-be40-9302f1b02501",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1360,
+        208
+      ],
+      "id": "654dc6df-c31d-462a-aafa-80b1c8311120",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2064,
+        192
+      ],
+      "id": "9fe17758-238b-493e-aebf-db55688b0963",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2608,
+        208
+      ],
+      "id": "e756ad87-e1c9-4008-98e1-5a207eec6706",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/slack/interactive",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2480,
+        576
+      ],
+      "id": "2cbbfb16-0e69-42f0-9f12-ebff9084d57d",
+      "name": "Webhook",
+      "webhookId": "17fc404d-e15d-4b3f-8b95-369b342a3d76"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9a057e9-1865-4c58-975f-e91f73cda719",
+              "name": "payloadObj",
+              "value": "={{ JSON.parse($json.body.payload) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        576
+      ],
+      "id": "1e4bd761-4691-4f1d-bb9b-cce354d54513",
+      "name": "Payload Object"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "65eefdc2-f327-47ab-93cf-af8eb64dd01d",
+              "name": "decision",
+              "value": "={{ JSON.parse($json.payloadObj).actions[0].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2896,
+        576
+      ],
+      "id": "1ae74901-a14c-49f0-b527-6ae0faded08a",
+      "name": "Decision"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.decision.split('|')[2] }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"={{ $json.decision.split('|')[0] }}\",\n  \"domain\": \"={{ $json.decision.split('|')[1] }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3104,
+        576
+      ],
+      "id": "a2f701cb-782e-49b7-8fde-00e1a62c2be8",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"channel\": \"{{ $node[\"HTTP Request1\"].json.channel }}\",\n  \"thread_ts\": \"{{ $node[\"HTTP Request1\"].json.ts || $node[\"HTTP Request1\"].json.event_ts }}\",\n  \"text\": \"Searching for the next available domain...\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"⚠️ *Alert received for:* `{{ $node[\"Wait\"].json.body.domain('=', '') }}`\\n\\nSeemingly the domain on the message comes empty, or it's not part of Product Database or it's already blocked. Product Team will give more insights soon.\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1760,
+        368
+      ],
+      "id": "038ca792-c08e-4a94-83f8-4a1a2cb38c06",
+      "name": "Domain error",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ ($json.channel || 'C08S7E2S7C2').trim() }}\",\n  \"thread_ts\": \"{{ ($json.ts || $json.event_ts || '').toString().trim() }}\",\n  \"text\": \"Searching domain in database...\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"🔍 *Searching for:* `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}`\\n\\nI am now searching for this domain in our databases to verify its type. Please wait a moment... ⏳\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2880,
+        208
+      ],
+      "id": "f898b62f-6b59-4997-8b46-1453acaae68e",
+      "name": "HTTP Request7",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr4rztn').text }}",
+                    "rightValue": "Bridge Domain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e5b47c95-ba66-407c-ae37-2d9e32953c11"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ff2b92c6-de53-49b9-8408-72d790f42749",
+                    "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr4rztn').text }}",
+                    "rightValue": "Ad-Server Domain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "514f6deb-1d49-49d4-8a2b-66a6ed1e42e4",
+                    "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr4rztn').text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        3392,
+        192
+      ],
+      "id": "892ec769-61e0-4e06-bf62-de9b842756d2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.monday.com/v2",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mondayComApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjYwNjMyNzc1NCwiYWFpIjoxMSwidWlkIjo2MTc3NzA0MSwiaWFkIjoiMjAyNi0wMS0xMlQxNDoyMzoyNS4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6NzMwOTE5MSwicmduIjoidXNlMSJ9.CfA8EN8zqOA-fx3XIrWW9v6WNYkMjS95A6BwdLYxIDk"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"query\": \"mutation ($itemId: ID!, $colVals: JSON!) { change_multiple_column_values(item_id: $itemId, board_id: 9166580655, column_values: $colVals) { id } }\",\n  \"variables\": {\n    \"itemId\": \"{{ $node['Get items item by column value'].json.id }}\",\n    \"colVals\": \"{\\\"color_mkr0zqkc\\\": {\\\"label\\\": \\\"Blocked\\\"}}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5024,
+        -80
+      ],
+      "id": "1a580f0d-574d-4bff-84a1-fcd2f2e6953b",
+      "name": "Updating the domain in monday1",
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"✅ *Backup identified:* The next available domain for *{{ $json.brand }}* is `{{ $json.backup_domain }}`. Initiating the Search & Replace process in MyAffiliates...\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5712,
+        -80
+      ],
+      "id": "a39bf355-4d95-4822-8f35-e61415542d46",
+      "name": "HTTP Request8",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0Ppk8hnp0auQk5pp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0Ppk8hnp0auQk5pp",
+          "cachedResultName": "Domain Blocked Sub-Workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        6160,
+        -80
+      ],
+      "id": "86eff5f3-74c9-4749-87c1-181bc099a83c",
+      "name": "Execute Domain Blocked Sub-Workflow1"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "POST",
+        "limitWaitTime": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4320,
+        16
+      ],
+      "id": "7ee64ea2-2ac0-4e4c-8edf-c4adaa40b426",
+      "name": "Wait1",
+      "webhookId": "43ed233f-ebe6-4e6d-a91d-0f97849919b8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "96f699b1-61cc-4292-834a-c98af230faee",
+              "leftValue": "={{ $json.body.action }}",
+              "rightValue": "==YES",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4528,
+        16
+      ],
+      "id": "052b2f19-6599-420e-b93f-e32e9d2d9245",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Domain Block Confirmation\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Can you confirm if this domain is actually blocked in BTK?*\\nDomain: `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}`\"\n      }\n    },\n    {\n      \"type\": \"actions\",\n      \"block_id\": \"confirm_block\",\n      \"elements\": [\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"Yes ✅\", \"emoji\": true },\n          \"style\": \"primary\",\n          \"action_id\": \"confirm_yes\",\n          \"value\": \"YES|{{ ($node['If1']?.json?.domain || 'unknown').trim() }}|{{ $execution.resumeUrl }}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"No ❌\", \"emoji\": true },\n          \"style\": \"danger\",\n          \"action_id\": \"confirm_no\",\n          \"value\": \"NO|{{ ($node['If1']?.json?.domain || 'unknown').trim() }}|{{ $execution.resumeUrl }}\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4112,
+        16
+      ],
+      "id": "67c54b9c-fef6-487d-9a6f-3b2b27dedf68",
+      "name": "Bridge Domain Found",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        },
+        "httpHeaderAuth": {
+          "id": "BV18mRovrh8GFEq3",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Domain not managed by us\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"🔍 *Analysis for:* `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}`\\n\\nThis domain does not appear to be an *Ad-Server* nor a *Bridge Domain* in our database. It is likely part of a system we do not control, a numbered domain, or a false-positive notification.\\n\\n*Status:* The bot will not perform any actions. The Product team will investigate and provide more insights soon.\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4176,
+        1088
+      ],
+      "id": "6e1e5b00-6bab-42c3-bda7-38a11840fffc",
+      "name": "No Ad-server no Bridge",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Ad-server domain detected\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"ℹ️ *Analysis for:* `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}`\\n\\nThis domain is classified as an *Ad-Server*. Currently, the automated Search & Replace function is not available for Ad-Servers.\\n\\n*Next Steps:* The Product team will perform the respective manual changes and will share the reports with the corresponding teams shortly. No automated actions have been taken.\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4096,
+        416
+      ],
+      "id": "cd51154c-f246-4cfd-bc3f-e342a8192f70",
+      "name": "Is Adserver",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "operation": "getByColumnValue",
+        "boardId": "9166580655",
+        "columnId": "name",
+        "columnValue": "={{ $node['debug_message'].json.domain.replace('=', '').trim() }}",
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        208
+      ],
+      "id": "d792b144-afef-450f-b0e8-a30abdc17cde",
+      "name": "Get items item by column value",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "837e5fbf-e2aa-44d1-abff-99eadd1426e3",
+              "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr0zqkc').text }}",
+              "rightValue": "Active",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3600,
+        80
+      ],
+      "id": "a2946a8c-33c9-49da-8815-9fb784969ff2",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Domain already blocked\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"🚫 *Notice:* The domain `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}` is already marked as *Blocked* in our Monday database.\\n\\nNo further updates are needed in MyAffiliates at this time. Product team will provide more insights if necessary.\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4096,
+        208
+      ],
+      "id": "130a2d48-6735-4721-8c4b-5afd5639b1b3",
+      "name": "Bridge Domain Blocked Already",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+        "name": "x"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        4304,
+        208
+      ],
+      "id": "bfa30f20-3bbe-4455-873a-68d47c1d3c85",
+      "name": "Add a reaction1",
+      "webhookId": "e828f747-02f8-4b53-b6e3-1e980e1b8caf",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+        "name": "hourglass_flowing_sand"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        4304,
+        416
+      ],
+      "id": "d8d69660-7e6e-45b4-a66b-922fd31e165a",
+      "name": "Add a reaction2",
+      "webhookId": "397af0fd-6fa5-48b7-81c8-ba213bff0930",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+        "name": "boom"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        4336,
+        1088
+      ],
+      "id": "1afc82ca-b5a7-4658-a02b-a58b5f0a526f",
+      "name": "Add a reaction3",
+      "webhookId": "49d00688-208d-4ea4-a352-d3ac239817f3",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+        "name": "no_entry"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        4944,
+        224
+      ],
+      "id": "36a5f94f-eb67-4fa9-bcd5-dae5b58c4e42",
+      "name": "Add a reaction4",
+      "webhookId": "54cba254-ecd8-45ab-ac1b-6f1307ecc3e6",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Searching for the next available domain...\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"✅ *Confirmation received for:* `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}`\\n\\nI am now searching for the next available domain in our databases. Please wait a moment... 🔍\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4736,
+        -80
+      ],
+      "id": "1fa97bfb-68df-44b4-980c-71a27a085998",
+      "name": "YES Received as Blocked",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Answered as NO Blocked\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"❌ *Confirmation received for:* `{{ $node[\"Wait1\"].json.body.domain.replace('=', '') }}`\\n\\nThanks for confirming. The domain seems to be non-blocked on BTK, however you can execute further steps from your end as I won't execute anything. Product Team will provide further details soon\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4736,
+        224
+      ],
+      "id": "539d83df-e442-42fe-9fe2-ff7977305b41",
+      "name": "NO Received as no-blocked",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "operation": "getByColumnValue",
+        "boardId": "9166580655",
+        "columnId": "=color_mkr0zqkc",
+        "columnValue": "Backup"
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        5232,
+        -80
+      ],
+      "id": "7d310bce-1693-42df-ada2-d5f35593201d",
+      "name": "Get items item by column value1",
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. We get all items with status \"Backup\"\nconst items = $input.all(); \n\n// 2. Extracting the domain and all it's variables\nconst targetBrand = $node['Get items item by column value'].json.column_values.find(c => c.id === 'dropdown_mkr0c2a9').text;\nconst targetType = $node['Get items item by column value'].json.column_values.find(c => c.id === 'color_mkr4rztn').text;\n\n// 3. BWe Vlookup the domain that matches with Brand and Type\nconst exactMatch = items.find(item => {\n  const cols = item.json.column_values;\n  const brand = cols.find(c => c.id === 'dropdown_mkr0c2a9')?.text;\n  const type = cols.find(c => c.id === 'color_mkr4rztn')?.text;\n  return brand === targetBrand && type === targetType;\n});\n\nif (!exactMatch) {\n  return [{ json: { found: false, message: \"No backup found for this specific brand/type.\" } }];\n}\n\nreturn [{\n  json: {\n    found: true,\n    backup_domain: exactMatch.json.name,\n    backup_id: exactMatch.json.id,\n    brand: targetBrand\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5488,
+        -80
+      ],
+      "id": "6ee81559-cbc7-4cd5-b140-7112d09b7459",
+      "name": "Finding Backup Domain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1a514002-7681-4b5e-9499-e5bdf4bc9cef",
+              "name": "old_domain",
+              "value": "={{ $node['debug_message'].json.domain.replace('=', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "5d377aff-2721-4ec3-854b-b29758a59b76",
+              "name": "new_domain",
+              "value": "={{ $node['Finding Backup Domain'].json.backup_domain }}",
+              "type": "string"
+            },
+            {
+              "id": "476c56f8-b4b8-4974-b923-6727f7092b90",
+              "name": "brand",
+              "value": "={{ $node['Finding Backup Domain'].json.brand }}",
+              "type": "string"
+            },
+            {
+              "id": "fb311300-19eb-44b7-9275-4d1e4d08cba5",
+              "name": "instance",
+              "value": "={{ $node['Get items item by column value'].json.column_values.find(c => c.id === 'color_mkr4rztn').text === 'Bridge Domain' ? 'Throne' : 'Realm' }}",
+              "type": "string"
+            },
+            {
+              "id": "78ceb6ac-1197-4887-a251-d3f6f551e2b5",
+              "name": "channel",
+              "value": "={{ $node['Obtaining the Timestamp and Channel'].json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "6260d107-da6b-4818-ac32-2b275590383c",
+              "name": "ts",
+              "value": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5920,
+        -80
+      ],
+      "id": "e6d27047-2214-4e07-8bef-7970fd9b7ea5",
+      "name": "Sending clean data"
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "operation": "getByColumnValue",
+        "boardId": "9191972838",
+        "columnId": "name",
+        "columnValue": "={{ $node['debug_message'].json.domain.replace('=', '').trim() }}",
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        3680,
+        832
+      ],
+      "id": "9fc40f20-7265-43e8-8148-2a4491a87687",
+      "name": "Get items item by column value2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr4v8y2').text }}",
+                    "rightValue": "Bridge Domain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e5b47c95-ba66-407c-ae37-2d9e32953c11"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ff2b92c6-de53-49b9-8408-72d790f42749",
+                    "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr4v8y2').text }}",
+                    "rightValue": "Ad-Server Domain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "514f6deb-1d49-49d4-8a2b-66a6ed1e42e4",
+                    "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr4v8y2').text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        3936,
+        816
+      ],
+      "id": "6c8a3596-a5ca-4c99-a705-0510772e64dc",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "837e5fbf-e2aa-44d1-abff-99eadd1426e3",
+              "leftValue": "={{ $json.column_values.find(c => c.id === 'color_mkr0zqkc').text }}",
+              "rightValue": "Active",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4192,
+        688
+      ],
+      "id": "e7e75a57-9f48-438c-bba5-39957782d7fc",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Domain Block Confirmation\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Can you confirm if this domain is actually blocked in BTK?*\\nDomain: `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}`\"\n      }\n    },\n    {\n      \"type\": \"actions\",\n      \"block_id\": \"confirm_block\",\n      \"elements\": [\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"Yes ✅\", \"emoji\": true },\n          \"style\": \"primary\",\n          \"action_id\": \"confirm_yes\",\n          \"value\": \"YES|{{ ($node['If3']?.json?.domain || 'unknown').trim() }}|{{ $execution.resumeUrl }}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"No ❌\", \"emoji\": true },\n          \"style\": \"danger\",\n          \"action_id\": \"confirm_no\",\n          \"value\": \"NO|{{ ($node['If3']?.json?.domain || 'unknown').trim() }}|{{ $execution.resumeUrl }}\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4608,
+        528
+      ],
+      "id": "988f8b7f-0757-4734-ad4d-99ec49dd6618",
+      "name": "Bridge Domain Found1",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        },
+        "httpHeaderAuth": {
+          "id": "BV18mRovrh8GFEq3",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Domain already blocked\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"🚫 *Notice:* The domain `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}` is already marked as *Blocked* in our Monday database.\\n\\nNo further updates are needed in MyAffiliates at this time. Product team will provide more insights if necessary.\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4464,
+        704
+      ],
+      "id": "e7f9459d-069b-4596-b9d1-cb4a134b30ce",
+      "name": "Bridge Domain Blocked Already1",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+        "name": "x"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        4688,
+        720
+      ],
+      "id": "5e3350a6-6062-4e19-84a5-8890d7964e2a",
+      "name": "Add a reaction5",
+      "webhookId": "e828f747-02f8-4b53-b6e3-1e980e1b8caf",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "POST",
+        "limitWaitTime": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4848,
+        528
+      ],
+      "id": "052e5566-fb00-45e7-ba7e-d5b4cb45867d",
+      "name": "Wait",
+      "webhookId": "43ed233f-ebe6-4e6d-a91d-0f97849919b8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "96f699b1-61cc-4292-834a-c98af230faee",
+              "leftValue": "={{ $json.body.action }}",
+              "rightValue": "==YES",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5072,
+        528
+      ],
+      "id": "c6aee140-ce11-46c1-a270-c665a5c02e39",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+        "name": "no_entry"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        5584,
+        672
+      ],
+      "id": "72a60aed-fb48-4a0a-b262-312411539b3c",
+      "name": "Add a reaction6",
+      "webhookId": "54cba254-ecd8-45ab-ac1b-6f1307ecc3e6",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Answered as NO Blocked\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"❌ *Confirmation received for:* `{{ $node[\"Wait1\"].json.body.domain.replace('=', '') }}`\\n\\nThanks for confirming. The domain seems to be non-blocked on BTK, however you can execute further steps from your end as I won't execute anything. Product Team will provide further details soon\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5376,
+        672
+      ],
+      "id": "0e66da72-121a-4bb8-8ab0-8ad4a241b268",
+      "name": "NO Received as no-blocked1",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.monday.com/v2",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mondayComApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjYwNjMyNzc1NCwiYWFpIjoxMSwidWlkIjo2MTc3NzA0MSwiaWFkIjoiMjAyNi0wMS0xMlQxNDoyMzoyNS4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6NzMwOTE5MSwicmduIjoidXNlMSJ9.CfA8EN8zqOA-fx3XIrWW9v6WNYkMjS95A6BwdLYxIDk"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"query\": \"mutation ($itemId: ID!, $colVals: JSON!) { change_multiple_column_values(item_id: $itemId, board_id: 9191972838, column_values: $colVals) { id } }\",\n  \"variables\": {\n    \"itemId\": \"{{ $node['Get items item by column value2'].json.id }}\",\n    \"colVals\": \"{\\\"color_mkr0zqkc\\\": {\\\"label\\\": \\\"Blocked\\\"}}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5664,
+        464
+      ],
+      "id": "0b9fce80-98a2-4296-818d-e4f56eb11e95",
+      "name": "Updating the domain in monday",
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"✅ *Backup identified:* The next available domain for *{{ $json.brand }}* is `{{ $json.backup_domain }}`. Initiating the Search & Replace process in MyAffiliates...\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6560,
+        464
+      ],
+      "id": "d097eee7-8462-42fa-a094-ce0a71a93049",
+      "name": "HTTP Request9",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0Ppk8hnp0auQk5pp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0Ppk8hnp0auQk5pp",
+          "cachedResultName": "Domain Blocked Sub-Workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        7008,
+        464
+      ],
+      "id": "33eeb96f-f338-4be3-93d2-05fefb608c91",
+      "name": "Execute Domain Blocked Sub-Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Searching for the next available domain...\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"✅ *Confirmation received for:* `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}`\\n\\nI am now searching for the next available domain in our databases. Please wait a moment... 🔍\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5376,
+        464
+      ],
+      "id": "3724210e-bede-4134-be76-19ad7cc592b8",
+      "name": "YES Received as Blocked1",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "operation": "getByColumnValue",
+        "boardId": "9191972838",
+        "columnId": "=color_mkr0zqkc",
+        "columnValue": "Backup"
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        5872,
+        464
+      ],
+      "id": "65553fe0-38cd-47bf-aeb8-9929a3a072d6",
+      "name": "Get items item by column value3",
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Capture all incoming items from the previous Monday.com node\nconst items = $input.all(); \n\n// 2. Capture and normalize target values from the original trigger (lowercase & trimmed)\nconst targetBrand = $node['Get items item by column value2'].json.column_values.find(c => c.id === 'dropdown_mkr0c2a9')?.text?.trim().toLowerCase();\nconst targetType = $node['Get items item by column value2'].json.column_values.find(c => c.id === 'color_mkr4v8y2')?.text?.trim().toLowerCase();\n\n// 3. DEBUG: Create a list showing exactly what the bot sees in the candidate pool\nconst debugPool = items.map(item => {\n  return {\n    domainName: item.json.name,\n    brandSeen: item.json.column_values.find(c => c.id === 'dropdown_mkr0c2a9')?.text?.trim().toLowerCase(),\n    typeSeen: item.json.column_values.find(c => c.id === 'color_mkr4v8y2')?.text?.trim().toLowerCase()\n  };\n});\n\n// 4. ATTEMPT 1: Search for an Exact Match (Brand AND Type)\nlet match = items.find(item => {\n  const brand = item.json.column_values.find(c => c.id === 'dropdown_mkr0c2a9')?.text?.trim().toLowerCase();\n  const type = item.json.column_values.find(c => c.id === 'color_mkr4v8y2')?.text?.trim().toLowerCase();\n  return brand === targetBrand && type === targetType;\n});\n\n// 5. ATTEMPT 2: Fallback (Search only by Brand if Type match fails)\nif (!match) {\n  match = items.find(item => {\n    const brand = item.json.column_values.find(c => c.id === 'dropdown_mkr0c2a9')?.text?.trim().toLowerCase();\n    return brand === targetBrand;\n  });\n}\n\n// 6. Final Output with Debug Data\nreturn [{\n  json: {\n    found: !!match,\n    searchCriteria: {\n      targetBrand,\n      targetType\n    },\n    backup_domain: match ? match.json.name : null,\n    backup_id: match ? match.json.id : null,\n    brand: match ? targetBrand : \"Not Found\",\n    debug_pool_size: items.length,\n    debug_all_candidates: debugPool // <--- Inspect this in the Output tab\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6128,
+        464
+      ],
+      "id": "fe9c1684-7420-46ef-8ddf-118d1b877a37",
+      "name": "Finding Backup Domain1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1a514002-7681-4b5e-9499-e5bdf4bc9cef",
+              "name": "old_domain",
+              "value": "={{ $node['debug_message'].json.domain.replace('=', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "5d377aff-2721-4ec3-854b-b29758a59b76",
+              "name": "new_domain",
+              "value": "={{ $node['Finding Backup Domain1'].json.backup_domain }}",
+              "type": "string"
+            },
+            {
+              "id": "476c56f8-b4b8-4974-b923-6727f7092b90",
+              "name": "brand",
+              "value": "={{ $node['Finding Backup Domain1'].json.brand }}",
+              "type": "string"
+            },
+            {
+              "id": "fb311300-19eb-44b7-9275-4d1e4d08cba5",
+              "name": "instance",
+              "value": "={{ $node['Get items item by column value2'].json.column_values.find(c => c.id === 'color_mkr4rztn').text === 'Bridge Domain' ? 'Throne' : 'Realm' }}",
+              "type": "string"
+            },
+            {
+              "id": "78ceb6ac-1197-4887-a251-d3f6f551e2b5",
+              "name": "channel",
+              "value": "={{ $node['Obtaining the Timestamp and Channel'].json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "6260d107-da6b-4818-ac32-2b275590383c",
+              "name": "ts",
+              "value": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6768,
+        464
+      ],
+      "id": "b4484ad4-460a-4508-8d08-7ba54aa44cb0",
+      "name": "Sending clean data1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $node['Obtaining the Timestamp and Channel'].json.channel }}\",\n  \"thread_ts\": \"{{ $node['Obtaining the Timestamp and Channel'].json.ts }}\",\n  \"text\": \"Domain already blocked\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"🚫 *Notice:* The domain `{{ $node['debug_message'].json.domain.replace('=', '').trim() }}` is already marked as *Blocked* in our Monday database.\\n\\nNo further updates are needed in MyAffiliates at this time. Product team will provide more insights if necessary.\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4176,
+        896
+      ],
+      "id": "bc254415-affb-49dc-9fb1-295bbe48f675",
+      "name": "Bridge Domain Blocked Already2",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "reaction",
+        "channelId": {
+          "__rl": true,
+          "value": "C08S7E2S7C2",
+          "mode": "list",
+          "cachedResultName": "marketing-support-requests"
+        },
+        "timestamp": "={{ $node['Obtaining the Timestamp and Channel'].json.ts }}",
+        "name": "x"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        4384,
+        896
+      ],
+      "id": "381d1888-dc26-409b-b2da-71bc02f5da30",
+      "name": "Add a reaction7",
+      "webhookId": "e828f747-02f8-4b53-b6e3-1e980e1b8caf",
+      "credentials": {
+        "slackApi": {
+          "id": "EoyzvpOSUCrMRlzO",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "operation": "changeColumnValue",
+        "boardId": "9191972838",
+        "itemId": "={{ $json.backup_id }}",
+        "columnId": "color_mkr0zqkc",
+        "value": "{ \"label\": \"Active\" }"
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        6400,
+        672
+      ],
+      "id": "1694838f-6008-4abf-91c0-6dbdbe3d9442",
+      "name": "Change a column value for a board item",
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "operation": "changeColumnValue",
+        "boardId": "9166580655",
+        "itemId": "={{ $json.backup_id }}",
+        "columnId": "color_mkr0zqkc",
+        "value": "{ \"label\": \"Active\" }"
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        5728,
+        192
+      ],
+      "id": "3e8f3059-6644-4e93-8d91-f08422d384cb",
+      "name": "Change a column value for a board item1",
+      "credentials": {
+        "mondayComApi": {
+          "id": "6MTjzNCPApf4Njwv",
+          "name": "Monday.com account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Obtaining the Timestamp and Channel",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "debug_message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Domain error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract Domain from HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Domain from HTML": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "debug_message": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtaining the Timestamp and Channel": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add a reaction": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Payload Object",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload Object": {
+      "main": [
+        [
+          {
+            "node": "Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Get items item by column value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Updating the domain in monday1": {
+      "main": [
+        [
+          {
+            "node": "Get items item by column value1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request8": {
+      "main": [
+        [
+          {
+            "node": "Sending clean data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Adserver",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get items item by column value2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "YES Received as Blocked",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NO Received as no-blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge Domain Found": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get items item by column value": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Bridge Domain Found",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bridge Domain Blocked Already",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge Domain Blocked Already": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Adserver": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Ad-server no Bridge": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YES Received as Blocked": {
+      "main": [
+        [
+          {
+            "node": "Updating the domain in monday1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NO Received as no-blocked": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get items item by column value1": {
+      "main": [
+        [
+          {
+            "node": "Finding Backup Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finding Backup Domain": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Change a column value for a board item1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sending clean data": {
+      "main": [
+        [
+          {
+            "node": "Execute Domain Blocked Sub-Workflow1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get items item by column value2": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bridge Domain Blocked Already2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Ad-server no Bridge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Bridge Domain Found1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bridge Domain Blocked Already1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge Domain Blocked Already1": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge Domain Found1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NO Received as no-blocked1": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "YES Received as Blocked1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NO Received as no-blocked1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Updating the domain in monday": {
+      "main": [
+        [
+          {
+            "node": "Get items item by column value3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request9": {
+      "main": [
+        [
+          {
+            "node": "Sending clean data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YES Received as Blocked1": {
+      "main": [
+        [
+          {
+            "node": "Updating the domain in monday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get items item by column value3": {
+      "main": [
+        [
+          {
+            "node": "Finding Backup Domain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finding Backup Domain1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Change a column value for a board item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sending clean data1": {
+      "main": [
+        [
+          {
+            "node": "Execute Domain Blocked Sub-Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge Domain Blocked Already2": {
+      "main": [
+        [
+          {
+            "node": "Add a reaction7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Change a column value for a board item": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "79c1970f-0b29-4504-9ed5-64b5f92ec196",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ed8fbabe0a9266e3c88d66e147ac48c21634f41c14e8443e97aadf8c6ae93cde"
+  },
+  "id": "TurAumY7-MguV0_-NIaaH",
+  "tags": []
+}
